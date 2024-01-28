@@ -1,5 +1,7 @@
 # openresty 短链服务器
 
+[![License](https://img.shields.io/npm/l/mithril.svg)](https://github.com/xukeawsl/shortUrl-server/blob/master/LICENSE)
+
 ## 手动部署(以 CentOS7 为例)
 
 1. 安装编译需要的库
