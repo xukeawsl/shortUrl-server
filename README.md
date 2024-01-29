@@ -1,4 +1,4 @@
-# openresty 短链服务器
+# 短链生成服务
 
 [![License](https://img.shields.io/npm/l/mithril.svg)](https://github.com/xukeawsl/shortUrl-server/blob/master/LICENSE)
 
