@@ -5,8 +5,14 @@ local mysql = require("resty.mysql")
 local shortUrl = ngx.var.scheme .. "://" .. ngx.var.host .. ngx.var.request_uri
 
 local g_red   -- redis handler
-local g_expire = 60 -- redis expire time(s)
 local g_db -- mysql hanlder
+
+local g_redis_expire_time = 60 -- redis expire time(s)
+local g_redis_timeout     = 10000 -- redis timeout(ms)
+local g_redis_pool_size   = 100 -- redis connection pool size
+
+local g_mysql_timeout     = 10000 -- mysql timeout(ms)
+local g_mysql_pool_size   = 100 -- mysql connection pool size
 
 -- 连接 redis 内存数据库
 local function connect_redis()
@@ -50,9 +56,30 @@ local function service_init()
         return false
     end
 
+    -- 解析配置变量
+    if ngx.var.redis_expire_time then
+        g_redis_expire_time = ngx.var.redis_expire_time
+    end
+
+    if ngx.var.redis_timeout then
+        g_redis_timeout = ngx.var.redis_timeout
+    end
+
+    if ngx.var.mysql_timeout then
+        g_mysql_timeout = ngx.var.mysql_timeout
+    end
+
+    if ngx.var.redis_pool_size then
+        g_redis_pool_size = ngx.var.redis_pool_size
+    end
+
+    if ngx.var.mysql_pool_size then
+        g_mysql_pool_size = ngx.var.mysql_pool_size
+    end
+
     -- 设置超时时间
-    g_red:set_timeout(10000) -- 10 sec
-    g_db:set_timeout(10000) -- 10 sec
+    g_red:set_timeout(g_redis_timeout)
+    g_db:set_timeout(g_mysql_timeout)
 
     return true
 end
@@ -83,7 +110,7 @@ local function set_shortUrl_cache(key, value)
     if not ok then
         return false
     end
-    local success, err = g_red:expire(key, g_expire)
+    local success, err = g_red:expire(key, g_redis_expire_time)
     if not success then
         ngx.log(ngx.ERR, "Failed to refresh cache TTL for " .. key .. ": ", err)
         return false
@@ -120,12 +147,12 @@ ngx.redirect(longUrl, ngx.HTTP_MOVED_TEMPORARILY)
 
 -- step6: 使用连接池复用数据库连接
 local ok, err
-ok, err = g_red:set_keepalive(10000, 100)
+ok, err = g_red:set_keepalive(g_redis_timeout, g_redis_pool_size)
 if not ok then
     ngx.log(ngx.ERR, "Failed to set redis keepalive: ", err)
 end
 
-ok, err = g_db:set_keepalive(10000, 100)
+ok, err = g_db:set_keepalive(g_mysql_timeout, g_mysql_pool_size)
 if not ok then
     ngx.log(ngx.ERR, "Failed to set mysql keepalive: ", err)
     return

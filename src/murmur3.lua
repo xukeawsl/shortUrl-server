@@ -1,4 +1,3 @@
--- murmur3_module.lua
 local ffi = require("ffi")
 
 local _M = {}
