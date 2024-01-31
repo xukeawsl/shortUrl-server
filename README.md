@@ -35,25 +35,20 @@ cd shortUrl-server
 
 4. 编译 C 动态库并添加到搜索路径下
 ```bash
-cd src
-gcc -fPIC -shared libmurmur3.c -o libmurmur3.so
-cp libmurmur3.so /usr/lib
+gcc -fPIC -shared src/libmurmur3.c -o /usr/lib/libmurmur3.so
 ldconfig
 ```
 
 5. 相关文件放置
 ```bash
-# nginx 安装在 /usr/local/openresty/nginx 下, 先在其目录下一个lua目录
-mkdir /usr/local/openresty/nginx/lua
+# 将 src 下的 lua 目录放到 /usr/local/openresty/nginx 目录下
+cp src/lua/ /usr/local/openresty/nginx/ -r
 
-# 将 src 下的 lua 文件放到 /usr/local/openresty/nginx/lua 目录下
-cp *.lua /usr/local/openresty/nginx/lua/
-
-# 将 static 目录拷贝到 nginx 目录下
-cp -r ../static /usr/local/openresty/nginx/
+# 将 static 目录拷贝到 /usr/local/openresty/nginx 目录下
+cp static/ /usr/local/openresty/nginx/ -r
 
 # 将配置文件拷贝到 /usr/local/openresty/nginx/conf 下
-cp ../conf/nginx.conf /usr/local/openresty/nginx/conf/
+cp conf/nginx.conf /usr/local/openresty/nginx/conf/
 ```
 
 6. 安装 redis 数据库
